@@ -1,0 +1,24 @@
+{
+  "name": "multiplayersnake_server",
+  "version": "1.0.0",
+  "description": "A server to manage sockets communications",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mackness33/Multiplayersnake_server.git"
+  },
+  "author": "David Mack",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mackness33/Multiplayersnake_server/issues"
+  },
+  "homepage": "https://github.com/mackness33/Multiplayersnake_server#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^2.0.20",
+    "socket.io": "^4.5.3"
+  }
+}
