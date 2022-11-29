@@ -1,12 +1,12 @@
-const express = require('express');
+import express from 'express';
 
 const app = express();
 const server = app.listen(PORT, ()=> {
     console.log(`listening to: ${PORT}`);
 })
 
-const io = require('socket.io');
+import { on } from 'socket.io';
 
-io.on('connection', (socket) => {
+on('connection', (socket) => {
     console.log("Connected successfully", socket.id);
 })
