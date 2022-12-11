@@ -52,20 +52,32 @@ io.on('connection', (socket) => {
         try {
             manager.leave(data.name, data.player);
             socket.leave(data.name);
-            console.log(`${data.player} leaved ${data.name}`);
             socket.to(data.name).emit('player', ({player: data.player, isDeleted: true}));
+            console.log(`${data.player} leaved ${data.name}`);
         } catch (e) {
-            socket.emit('fail', e.message);
             console.error(e);
         }
     });
 
-    socket.on('ready', (_) => {
-
+    socket.on('ready', (data) => {
+        try {
+            isAdmin(data.name, data.player);
+            socket.to(data.name).emit('ready');
+        } catch {
+            console.error(e);
+        }
     });
 
-    socket.on('removePlayer', (_) => {
-
+    socket.on('removePlayer', (data) => {
+        try {
+            manager.leave(data.name, data.player);
+            const room = manager.games[`${data.name}`];
+            socket.leave(data.name);
+            socket.to(data.name).emit('player', ({player: data.player, isDeleted: true}));
+            console.log(`${room.admin} removed ${data.player} from ${data.name}`);
+        } catch (e) {
+            console.error(e);
+        }
     });
 })
 

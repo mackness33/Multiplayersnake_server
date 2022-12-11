@@ -19,7 +19,7 @@ class ServerService {
 
     join = (name, player) => {
         if (!this.games[`${name}`]) {
-            const error = new Error('The room doesn\'t exist', false);
+            const error = new Error('The room doesn\'t exist');
             error.isFull = false;
             throw error;
         }
@@ -29,6 +29,16 @@ class ServerService {
 
     leave = (name, player) => {
         this.games[`${name}`].leave(player);
+    }
+
+    isAdmin = (name, player) => {
+        if (!this.games[`${name}`]) {
+            const error = new Error('The room doesn\'t exist');
+            throw error;
+        } else if (this.games[`${name}`].admin !== player) {
+            const error = new Error('You don\'t have the permission for this action');
+            throw error;
+        }
     }
 }
 
