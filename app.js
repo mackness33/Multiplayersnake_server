@@ -37,11 +37,11 @@ io.on('connection', (socket) => {
 
     socket.on('join', (data, ack) => {
         try {
-            const rules = manager.join(data.name, data.player);
+            const infos = manager.join(data.name, data.player);
             socket.to(data.name).emit('player', ({player: data.player, isDeleted: false}));
             socket.join(data.name);
             console.log(`${data.player} joined ${data.name}`);
-            ack({rules, isFull: null});
+            ack({infos, isFull: null});
         } catch (e) {
             console.error(e);
             ack({rules: null, isFull: e.isFull});

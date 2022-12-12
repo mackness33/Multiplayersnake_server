@@ -14,7 +14,7 @@ class GameService {
 
         this.players.push(player);
 
-        return this.rules
+        return {rules: this.rules, players: this.players, admin: this.admin};
     }
 
     leave = (player_email) => {
