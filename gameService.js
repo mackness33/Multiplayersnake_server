@@ -1,7 +1,8 @@
 class GameService {
     constructor (rules) {
         this.admin = rules.player;
-        this.players = new Set<Player>(new Player(this.admin));
+        this.players = new Set();
+        this.players.add(new Player(this.admin));
         this.rules = new Configuration(rules);
     }
 
@@ -25,6 +26,10 @@ class GameService {
         if (this.players.size >= this.rules.max_players) {
             const error = new Error('The room is full');
             error.isFull = true;
+            throw error;
+        } else if (this.players_emails.includes(player)) {
+            const error = new Error('The player is already inside');
+            error.isFull = false;
             throw error;
         }
 
