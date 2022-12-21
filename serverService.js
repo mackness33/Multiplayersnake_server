@@ -6,40 +6,71 @@ class ServerService {
     }
 
     create = (rules) => {
-        if (this.games[`${rules.name}`]) {
+        if (this.games[`${rules.room}`]) {
             throw new Error('Room already in use');
         }
 
-        this.games[`${rules.name}`] = new GameService(rules);
+        this.games[`${rules.room}`] = new GameService(rules);
     }
 
-    remove = (name) => {
-        delete this.games[`${name}`];
+    remove = (room) => {
+        delete this.games[`${room}`];
     }
 
-    join = (name, player) => {
-        if (!this.games[`${name}`]) {
+    join = (room, player) => {
+        if (!this.games[`${room}`]) {
             const error = new Error('The room doesn\'t exist');
             error.isFull = false;
             throw error;
         }
 
-        return this.games[`${name}`].join(player);
+        return this.games[`${room}`].join(player);
     }
 
-    leave = (name, player) => {
-        this.games[`${name}`].leave(player);
-    }
-
-    isAdmin = (name, player) => {
-        if (!this.games[`${name}`]) {
-            const error = new Error('The room doesn\'t exist');
-            throw error;
-        } else if (this.games[`${name}`].admin !== player) {
-            const error = new Error('You don\'t have the permission for this action');
-            throw error;
+    leave = (room, player) => {
+        if (this.games[`${room}`]) {
+            this.games[`${room}`].leave(player);
+        } else {
+            throw new Error('The room doesn\'t exist');
         }
     }
+
+    abort = (room, player) => {
+        this.isAdmin(room, player);
+        delete this.games[`${room}`];
+    }
+
+    isAdmin = (room, player) => {
+        if (!this.games[`${room}`]) {
+            throw new Error('The room doesn\'t exist');
+        } else if (this.games[`${room}`].isAdmin(player)) {
+            throw new Error('You don\'t have the permission for this action');
+        }
+    }
+
+    ready = async (room, player) => {
+        this.isAdmin(room, player);
+        return this.games[`${room}`].ready;
+    }
+
+    count = () => Object.keys(this.games).length;
 }
+
+// class Room {
+//     constructor (room, game) {
+//         this.game = game;
+//         this.room = room
+//     }
+// }
+
+// class Manager {
+//     constructor () {
+//         this.rooms = new Set();
+//     }
+
+//     has = (room) => {
+//         this.rooms = new 
+//     }
+// }
 
 module.exports = ServerService;
