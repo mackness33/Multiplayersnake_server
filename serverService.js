@@ -43,14 +43,14 @@ class ServerService {
     isAdmin = (room, player) => {
         if (!this.games[`${room}`]) {
             throw new Error('The room doesn\'t exist');
-        } else if (this.games[`${room}`].isAdmin(player)) {
+        } else if (!this.games[`${room}`].isAdmin(player)) {
             throw new Error('You don\'t have the permission for this action');
         }
     }
 
-    ready = async (room, player) => {
+    ready = (room, player) => {
         this.isAdmin(room, player);
-        return this.games[`${room}`].ready;
+        return this.games[`${room}`].ready();
     }
 
     count = () => Object.keys(this.games).length;

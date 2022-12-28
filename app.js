@@ -2,7 +2,6 @@ const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const { readSync } = require('fs');
 const ServerService = require('./serverService');
 const manager = new ServerService();
 
@@ -57,7 +56,7 @@ io.on('connection', (socket) => {
         try {
             manager.leave(data.room, data.player);
             socket.leave(data.room);
-            socket.to(data.room).emit('player', ({player: data.player, isDeleted: true}));
+            io.to(data.room).emit('player', ({player: data.player, isDeleted: true}));
             console.log(`${data.player} leaved ${data.room}`);
         } catch (e) {
             console.error(e);
@@ -69,7 +68,7 @@ io.on('connection', (socket) => {
             manager.abort(data.room, data.player);
             socket.leave(data.room);
             console.log(`${data.player} leaved ${data.room}`);
-            socket.to(data.room).emit('abort', (_));
+            io.to(data.room).emit('abort', ({}));
             console.log(`${data.player} aborted ${data.room}`);
         } catch (e) {
             console.error(e);
@@ -78,12 +77,11 @@ io.on('connection', (socket) => {
 
     socket.on('ready', async (data) => {
         try {
-            const ended = manager.ready(data.room, data.player);
-            socket.to(data.room).emit('ready');
+            const {game_end, players} = manager.ready(data.room, data.player);
+            io.to(data.room).emit('ready', (players));
             console.log(manager.games);
             console.log('ready!');
-            const another = await ended;
-            await another;
+            // await game_end;
             socket.to(data.room).emit('end');
             console.log('Game ended');
         } catch (e) {

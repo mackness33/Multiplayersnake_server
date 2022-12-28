@@ -57,16 +57,16 @@ class GameService {
         }
     }
 
-    ready = async () => {
+    ready = () => {
         // this.promised_end_game = {
         //     then(onFulfilled) {
         //         onFulfilled();
         //     },
         // };
 
-        this.promised_end_game = new Promise();
+        this.promised_end_game = new Promise(() => {}, () => {});
 
-        return this.promised_end_game;
+        return {game_end: this.promised_end_game, players: this.players_emails};
     }
 
     isAdmin = (player) => {
