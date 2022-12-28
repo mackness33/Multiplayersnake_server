@@ -39,7 +39,7 @@ class GameService {
     }
 
     leave = (player_email) => {
-        if (this.players_emails.contains(player_email)) {
+        if (this.players_emails.includes(player_email)) {
             this.players = new Set(this._array_players.filter(player => player.email !== player_email));
         } else {
             throw new Error('The player is not part of the room');
@@ -69,6 +69,14 @@ class GameService {
         return {game_end: this.promised_end_game, players: this.players_emails};
     }
 
+    eat = (player_email, is_special) => {
+        if (this.players_emails.includes(player_email)) {
+            
+        } else {
+            throw new Error('The player is not part of the room');
+        }
+    }
+
     isAdmin = (player) => {
         return this.admin === player;
     }
@@ -77,8 +85,11 @@ class GameService {
 class Player {
     constructor (email) {
         this.email = email;
+        this.points = 0;
         this.ended = false;
     }
+
+    eat = (is_special) => this.points += (is_special) ? 3 : 1;
 }
 
 class Configuration {

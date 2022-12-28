@@ -53,6 +53,14 @@ class ServerService {
         return this.games[`${room}`].ready();
     }
 
+    eat = (room, player, is_special) => {
+        if (this.games[`${room}`]) {
+            this.games[`${room}`].eat(player, is_special);
+        } else {
+            throw new Error('The room doesn\'t exist');
+        }
+    }
+
     count = () => Object.keys(this.games).length;
 }
 

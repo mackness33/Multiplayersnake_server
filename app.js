@@ -101,6 +101,16 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('eat', (data) => {
+        try {
+            manager.eat(data.room, data.player, data.isSpecial);
+            socket.to(data.room).emit('updatePoints', ({player: data.player, isSpecial: data.isSpecial}));
+            console.log(`${data.player} in the room ${data.room} has eaten a ${(data.isSpecial) ? 'special' : 'normal'} fruit`);
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
     socket.on('end', (email, ack) => {
         
     });
