@@ -94,7 +94,7 @@ io.on('connection', (socket) => {
             manager.leave(data.room, data.player);
             const room = manager.games[`${data.room}`];
             socket.leave(data.room);
-            socket.to(data.room).emit('player', ({player: data.player, isDeleted: true}));
+            io.to(data.room).emit('player', ({player: data.player, isDeleted: true}));
             console.log(`${room.admin} removed ${data.player} from ${data.room}`);
         } catch (e) {
             console.error(e);
@@ -104,7 +104,7 @@ io.on('connection', (socket) => {
     socket.on('eat', (data) => {
         try {
             manager.eat(data.room, data.player, data.isSpecial);
-            socket.to(data.room).emit('updatePoints', ({player: data.player, isSpecial: data.isSpecial}));
+            io.to(data.room).emit('points', ({player: data.player, isSpecial: data.isSpecial}));
             console.log(`${data.player} in the room ${data.room} has eaten a ${(data.isSpecial) ? 'special' : 'normal'} fruit`);
         } catch (e) {
             console.error(e);
