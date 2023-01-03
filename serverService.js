@@ -37,7 +37,7 @@ class ServerService {
 
     abort = (room, player) => {
         this.isAdmin(room, player);
-        delete this.games[`${room}`];
+        this.remove(room);
     }
 
     isAdmin = (room, player) => {
@@ -56,6 +56,14 @@ class ServerService {
     eat = (room, player, is_special) => {
         if (this.games[`${room}`]) {
             this.games[`${room}`].eat(player, is_special);
+        } else {
+            throw new Error('The room doesn\'t exist');
+        }
+    }
+
+    end = (room, player) => {
+        if (this.games[`${room}`]) {
+            return this.games[`${room}`].end(player);
         } else {
             throw new Error('The room doesn\'t exist');
         }

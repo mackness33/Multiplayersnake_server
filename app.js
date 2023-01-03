@@ -81,9 +81,10 @@ io.on('connection', (socket) => {
             io.to(data.room).emit('ready', (players));
             console.log(manager.games);
             console.log('ready!');
-            // await game_end;
-            socket.to(data.room).emit('end');
-            console.log('Game ended');
+            await game_end;
+            manager.remove(data.room);
+            io.to(data.room).emit('end');
+            console.log('Game has ended');
         } catch (e) {
             console.error(e);
         }
@@ -111,8 +112,18 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('end', (email, ack) => {
-        
+    socket.on('end', (data) => {
+        try {
+            const has_ended = manager.end(data.room, data.player);
+            console.log(`${data.player} in the room ${data.room} has ended the game`);
+            if (has_ended) {
+                manager.remove(data.room);
+                io.to(data.room).emit('end');
+                console.log('Game has ended');
+            }
+        } catch (e) {
+            console.error(e);
+        }
     });
 })
 

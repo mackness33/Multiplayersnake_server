@@ -47,14 +47,13 @@ class GameService {
     }
 
     end = (player_email) => {
+        console.log('in END!!');
         const index = this.players_emails.indexOf(player_email);
         if (index > -1 && !this._array_players[index].ended) {
-            this.players[index].ended = true;
+            this._array_players[index].ended = true;
         }
 
-        if (have_all_players_ended_game) {
-            Promise.resolve(this.promised_end_game);
-        }
+        return this.have_all_players_ended_game;
     }
 
     ready = () => {
@@ -64,14 +63,31 @@ class GameService {
         //     },
         // };
 
-        this.promised_end_game = new Promise(() => {}, () => {});
+        // this.promised_end_game = new Promise(() => {}, () => {});
 
-        return {game_end: this.promised_end_game, players: this.players_emails};
+        return {game_end: this.countdown(), players: this.players_emails};
+        // this.countdown();
+        // return this.players_emails;
+    }
+    
+    countdown = ()  => {
+        // const max_time = ((this.rules.max_time * 60) + 10); // in seconds
+        return new Promise((resolve, _) => {
+            setTimeout(() => {
+                    resolve();
+                }, 5 * 1000);
+            }
+        );
+                
+        // setTimeout(() => {
+        //     for(const player in this.players) this.end(player.email);
+        // }, 5 * 1000);
     }
 
     eat = (player_email, is_special) => {
-        if (this.players_emails.includes(player_email)) {
-            
+        const index = this.players_emails.indexOf(player_email);
+        if (index > -1) {
+            this._array_players[index].points += (is_special) ? 3 : 1;
         } else {
             throw new Error('The player is not part of the room');
         }
@@ -99,6 +115,7 @@ class Configuration {
         this.index_time = rules.indexTime;
         this.index_points = rules.indexPoints;
         this.public = rules.public;
+        this.max_time = rules.maxTime;
     }
 
     toJson = () => {
