@@ -7,18 +7,18 @@ class GameService {
     }
 
     get players_emails () {
-        return this._array_players.map(player => player.email);
+        return this.array_players.map(player => player.email);
     }
 
     get players_ending () {
-        return this._array_players.map(player => player.ended);
+        return this.array_players.map(player => player.ended);
     }
 
     get have_all_players_ended_game () {
         return this.players_ending.reduce((prevValue, currValue) => prevValue && currValue)
     }
 
-    get _array_players () { return [...this.players] };
+    get array_players () { return [...this.players] };
 
     set _new_players (array) { this.players = new Set(array); }
 
@@ -40,7 +40,7 @@ class GameService {
 
     leave = (player_email) => {
         if (this.players_emails.includes(player_email)) {
-            this.players = new Set(this._array_players.filter(player => player.email !== player_email));
+            this.players = new Set(this.array_players.filter(player => player.email !== player_email));
         } else {
             throw new Error('The player is not part of the room');
         }
@@ -49,25 +49,15 @@ class GameService {
     end = (player_email) => {
         console.log('in END!!');
         const index = this.players_emails.indexOf(player_email);
-        if (index > -1 && !this._array_players[index].ended) {
-            this._array_players[index].ended = true;
+        if (index > -1 && !this.array_players[index].ended) {
+            this.array_players[index].ended = true;
         }
 
         return this.have_all_players_ended_game;
     }
 
     ready = () => {
-        // this.promised_end_game = {
-        //     then(onFulfilled) {
-        //         onFulfilled();
-        //     },
-        // };
-
-        // this.promised_end_game = new Promise(() => {}, () => {});
-
         return {game_end: this.countdown(), players: this.players_emails};
-        // this.countdown();
-        // return this.players_emails;
     }
     
     countdown = ()  => {
@@ -78,16 +68,12 @@ class GameService {
                 }, 5 * 1000);
             }
         );
-                
-        // setTimeout(() => {
-        //     for(const player in this.players) this.end(player.email);
-        // }, 5 * 1000);
     }
 
     eat = (player_email, is_special) => {
         const index = this.players_emails.indexOf(player_email);
         if (index > -1) {
-            this._array_players[index].points += (is_special) ? 3 : 1;
+            this.array_players[index].points += (is_special) ? 3 : 1;
         } else {
             throw new Error('The player is not part of the room');
         }
@@ -124,6 +110,13 @@ class Configuration {
             indexTime: this.index_time,
             indexPoints: this.index_time,
             public: this.public,
+        }
+    }
+
+    getRules = () => {
+        return {
+            max_players: this.max_players,
+            max_time: this.max_time,
         }
     }
 }

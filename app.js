@@ -1,12 +1,12 @@
 const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+require('dotenv').config();
 
 const ServerService = require('./serverService');
 const manager = new ServerService();
 
-
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     res.send("Node Server is running. Yay!!");
     console.log('in the index');
 })
@@ -79,12 +79,15 @@ io.on('connection', (socket) => {
         try {
             const {game_end, players} = manager.ready(data.room, data.player);
             io.to(data.room).emit('ready', (players));
-            console.log(manager.games);
+            console.log(manager._games);
             console.log('ready!');
             await game_end;
-            manager.remove(data.room);
-            io.to(data.room).emit('end');
-            console.log('Game has ended');
+            if (manager.exists(data.room)) {
+                manager.save_game(data.room);
+                manager.remove(data.room);
+                io.to(data.room).emit('end');
+                console.log('Game has ended');
+            }
         } catch (e) {
             console.error(e);
         }
@@ -93,7 +96,7 @@ io.on('connection', (socket) => {
     socket.on('removePlayer', (data) => {
         try {
             manager.leave(data.room, data.player);
-            const room = manager.games[`${data.room}`];
+            const room = manager._games[`${data.room}`];
             socket.leave(data.room);
             io.to(data.room).emit('player', ({player: data.player, isDeleted: true}));
             console.log(`${room.admin} removed ${data.player} from ${data.room}`);
@@ -117,6 +120,7 @@ io.on('connection', (socket) => {
             const has_ended = manager.end(data.room, data.player);
             console.log(`${data.player} in the room ${data.room} has ended the game`);
             if (has_ended) {
+                manager.save_game(data.room);
                 manager.remove(data.room);
                 io.to(data.room).emit('end');
                 console.log('Game has ended');
