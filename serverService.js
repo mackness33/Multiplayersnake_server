@@ -78,7 +78,7 @@ class ServerService {
     save_game = (room) => {
         let game;
         if (game = this._games[`${room}`]) {
-            this._database.create_game(game.array_players, game.rules, room);
+            return this._database.create_game(game.array_players, game.rules, room);
         } else {
             throw new Error('The room doesn\'t exist');
         }

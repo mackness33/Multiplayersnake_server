@@ -33,11 +33,30 @@ class SupabaseService {
             game[`player${index}_points`] = players[index].points;
         }
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('games')
-            .insert(game);
+            .insert(game).select(`
+                id,
+                name,
+                max_time,
+                first_player: player0(email),
+                first_player_points: player0_points,
+                second_player: player1(email),
+                second_player_points: player1_points,
+                third_player: player2(email),
+                third_player_points: player2_points,
+                fourth_player: player3(email),
+                fourth_player_points: player3_points
+            `);
 
-        if (error) console.error(error);
+        if (error && error !== null) {
+            console.error(error)
+            throw Error(error);
+        };
+
+        console.log(`Inserting the game: ${room}`);
+
+        return data;
     }
 
     get_players_id = async (players) => {
@@ -46,10 +65,10 @@ class SupabaseService {
         .select('id')
         .in('email', players);
 
-        if (error) {
-            console.error(error);
-            return null;
-        }
+        if (error && error !== null) {
+            console.error(error)
+            throw Error(error);
+        };
 
         return data;
     }

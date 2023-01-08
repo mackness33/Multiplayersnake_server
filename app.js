@@ -83,9 +83,9 @@ io.on('connection', (socket) => {
             console.log('ready!');
             await game_end;
             if (manager.exists(data.room)) {
-                manager.save_game(data.room);
+                const game = await manager.save_game(data.room);
                 manager.remove(data.room);
-                io.to(data.room).emit('end');
+                io.to(data.room).emit('end', (game));
                 console.log('Game has ended');
             }
         } catch (e) {
@@ -115,14 +115,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('end', (data) => {
+    socket.on('end', async (data) => {
         try {
             const has_ended = manager.end(data.room, data.player);
             console.log(`${data.player} in the room ${data.room} has ended the game`);
             if (has_ended) {
-                manager.save_game(data.room);
+                const game = await manager.save_game(data.room);
                 manager.remove(data.room);
-                io.to(data.room).emit('end');
+                io.to(data.room).emit('end', (game));
                 console.log('Game has ended');
             }
         } catch (e) {
