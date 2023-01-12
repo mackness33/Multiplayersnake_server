@@ -57,15 +57,19 @@ class GameService {
     }
 
     ready = () => {
-        return {game_end: this.countdown(), players: this.players_emails};
+        // if (this.rules.max_players === this.players.size) {
+            return {game_end: this.countdown(), players: this.players_emails};
+        // }
+
+        // return {};
     }
     
     countdown = ()  => {
-        // const max_time = ((this.rules.max_time * 60) + 10); // in seconds
+        const max_time = ((this.rules.max_time * 60) + 10); // in seconds
         return new Promise((resolve, _) => {
             setTimeout(() => {
-                    resolve();
-                }, 5 * 1000);
+                    resolve(this.rules.max_time !== 0);
+                }, max_time * 1000);
             }
         );
     }
@@ -74,6 +78,7 @@ class GameService {
         const index = this.players_emails.indexOf(player_email);
         if (index > -1) {
             this.array_players[index].points += (is_special) ? 3 : 1;
+            return this.rules.max_points && this.array_players[index].points >= this.rules.max_points;
         } else {
             throw new Error('The player is not part of the room');
         }
@@ -102,6 +107,7 @@ class Configuration {
         this.index_points = rules.indexPoints;
         this.public = rules.public;
         this.max_time = rules.maxTime;
+        this.max_points = rules.maxPoints;
     }
 
     toJson = () => {
@@ -117,6 +123,7 @@ class Configuration {
         return {
             max_players: this.max_players,
             max_time: this.max_time,
+            max_points: this.max_points,
         }
     }
 }

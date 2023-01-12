@@ -8,7 +8,7 @@ const supabase = require('@supabase/supabase-js').createClient(process.env.SUPAB
 
 class SupabaseService {
     init = async () => {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email: process.env.SUPABASE_MAIL,
             password: process.env.SUPABASE_PSW,
         })
@@ -39,14 +39,14 @@ class SupabaseService {
                 id,
                 name,
                 max_time,
-                first_player: player0(email),
-                first_player_points: player0_points,
-                second_player: player1(email),
-                second_player_points: player1_points,
-                third_player: player2(email),
-                third_player_points: player2_points,
-                fourth_player: player3(email),
-                fourth_player_points: player3_points
+                player0(email),
+                player0_points,
+                player1(email),
+                player1_points,
+                player2(email),
+                player2_points,
+                player3(email),
+                player3_points
             `);
 
         if (error && error !== null) {

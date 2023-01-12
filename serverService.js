@@ -59,7 +59,7 @@ class ServerService {
 
     eat = (room, player, is_special) => {
         if (this._games[`${room}`]) {
-            this._games[`${room}`].eat(player, is_special);
+            return this._games[`${room}`].eat(player, is_special);
         } else {
             throw new Error('The room doesn\'t exist');
         }

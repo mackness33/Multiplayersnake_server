@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
     socket.on('join', (data, ack) => {
         try {
             const infos = manager.join(data.room, data.player);
-            socket.to(data.room).emit('player', ({player: data.player, isDeleted: false}));
+            io.to(data.room).emit('player', ({player: data.player, isDeleted: false}));
             socket.join(data.room);
             ack({infos, isFull: null});
         } catch (e) {
@@ -78,15 +78,19 @@ io.on('connection', (socket) => {
     socket.on('ready', async (data) => {
         try {
             const {game_end, players} = manager.ready(data.room, data.player);
-            io.to(data.room).emit('ready', (players));
-            console.log(manager._games);
-            console.log('ready!');
-            await game_end;
-            if (manager.exists(data.room)) {
-                const game = await manager.save_game(data.room);
-                manager.remove(data.room);
-                io.to(data.room).emit('end', (game));
-                console.log('Game has ended');
+            if (game_end && players) {
+                io.to(data.room).emit('ready', (players));
+                console.log(manager._games);
+                console.log('ready!');
+                const is_time_attack = await game_end;
+                if (is_time_attack && manager.exists(data.room)) {
+                    const game = await manager.save_game(data.room);
+                    io.to(data.room).emit('end', (game));
+                    manager.remove(data.room);
+                    console.log('Game has ended');
+                }
+            } else {
+                socket.emit('ready', ([]));
             }
         } catch (e) {
             console.error(e);
@@ -105,11 +109,18 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('eat', (data) => {
+    socket.on('eat', async (data) => {
         try {
-            manager.eat(data.room, data.player, data.isSpecial);
+            const exceed_max_points = manager.eat(data.room, data.player, data.isSpecial);
             io.to(data.room).emit('points', ({player: data.player, isSpecial: data.isSpecial}));
             console.log(`${data.player} in the room ${data.room} has eaten a ${(data.isSpecial) ? 'special' : 'normal'} fruit`);
+            if (exceed_max_points && manager.exists(data.room)) {
+                console.log(`${data.player} in the room ${data.room} has reached the maximum points`);
+                const game = await manager.save_game(data.room);
+                io.to(data.room).emit('end', (game));
+                manager.remove(data.room);
+                console.log('Game has ended');
+            }
         } catch (e) {
             console.error(e);
         }
@@ -121,8 +132,8 @@ io.on('connection', (socket) => {
             console.log(`${data.player} in the room ${data.room} has ended the game`);
             if (has_ended) {
                 const game = await manager.save_game(data.room);
-                manager.remove(data.room);
                 io.to(data.room).emit('end', (game));
+                manager.remove(data.room);
                 console.log('Game has ended');
             }
         } catch (e) {
