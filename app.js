@@ -1,15 +1,42 @@
 const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+const semaphore = require('semaphore')(1);
 require('dotenv').config();
 
 const ServerService = require('./serverService');
 const manager = new ServerService();
 
-app.get('/', async (req, res) => {
-    res.send("Node Server is running. Yay!!");
-    console.log('in the index');
-})
+// app.get('/', async (req, res) => {
+//     res.send("Node Server is running. Yay!!");
+//     console.log('in the index');
+// })
+
+const end_and_save_game = async (room) => {
+    if (manager.exists(room)) {
+        const game = await manager.save_game(room);
+        io.to(room).emit('end', (game));
+        manager.remove(room);
+        console.log('Game has ended');
+    }
+}
+
+// wrap it up like this
+const lock = async () =>
+    new Promise((resolve) => {
+        semaphore.take(() => {
+            resolve(() => {
+                semaphore.leave();
+            });
+        });
+    });
+
+// then use it like this
+// (async () => {
+//     const unlock = await lock();
+//     await myProtectedCode('1');
+//     unlock();
+// })();
 
 io.on('connection', (socket) => {
     console.log("Connected successfully ", socket.id);
@@ -84,10 +111,9 @@ io.on('connection', (socket) => {
                 console.log('ready!');
                 const is_time_attack = await game_end;
                 if (is_time_attack && manager.exists(data.room)) {
-                    const game = await manager.save_game(data.room);
-                    io.to(data.room).emit('end', (game));
-                    manager.remove(data.room);
-                    console.log('Game has ended');
+                    const unlock = await lock();
+                    await end_and_save_game(data.room);
+                    unlock();
                 }
             } else {
                 socket.emit('ready', ([]));
@@ -115,11 +141,9 @@ io.on('connection', (socket) => {
             io.to(data.room).emit('points', ({player: data.player, isSpecial: data.isSpecial}));
             console.log(`${data.player} in the room ${data.room} has eaten a ${(data.isSpecial) ? 'special' : 'normal'} fruit`);
             if (exceed_max_points && manager.exists(data.room)) {
-                console.log(`${data.player} in the room ${data.room} has reached the maximum points`);
-                const game = await manager.save_game(data.room);
-                io.to(data.room).emit('end', (game));
-                manager.remove(data.room);
-                console.log('Game has ended');
+                const unlock = await lock();
+                await end_and_save_game(data.room);
+                unlock();
             }
         } catch (e) {
             console.error(e);
@@ -131,15 +155,16 @@ io.on('connection', (socket) => {
             const has_ended = manager.end(data.room, data.player);
             console.log(`${data.player} in the room ${data.room} has ended the game`);
             if (has_ended) {
-                const game = await manager.save_game(data.room);
-                io.to(data.room).emit('end', (game));
-                manager.remove(data.room);
-                console.log('Game has ended');
+                const unlock = await lock();
+                await end_and_save_game(data.room);
+                unlock();
             }
         } catch (e) {
             console.error(e);
         }
     });
+
+
 })
 
 server.listen(3001,  ()=> {
