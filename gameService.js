@@ -63,7 +63,7 @@ class GameService {
 
         // return {};
     }
-    
+
     countdown = ()  => {
         const max_time = ((this.rules.max_time * 60) + 10); // in seconds
         return new Promise((resolve, _) => {
@@ -84,7 +84,7 @@ class GameService {
         }
     }
 
-    isAdmin = (player) => {
+    is_admin = (player) => {
         return this.admin === player;
     }
 }
@@ -124,6 +124,7 @@ class Configuration {
             max_players: this.max_players,
             max_time: this.max_time,
             max_points: this.max_points,
+            public: this.public,
         }
     }
 }

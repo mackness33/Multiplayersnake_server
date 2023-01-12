@@ -14,8 +14,9 @@ const manager = new ServerService();
 
 const end_and_save_game = async (room) => {
     if (manager.exists(room)) {
+        io.to(room).emit('end');
         const game = await manager.save_game(room);
-        io.to(room).emit('end', (game));
+        io.to(room).emit('results', (game));
         manager.remove(room);
         console.log('Game has ended');
     }
@@ -30,13 +31,6 @@ const lock = async () =>
             });
         });
     });
-
-// then use it like this
-// (async () => {
-//     const unlock = await lock();
-//     await myProtectedCode('1');
-//     unlock();
-// })();
 
 io.on('connection', (socket) => {
     console.log("Connected successfully ", socket.id);
@@ -67,11 +61,11 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('join', (data, ack) => {
+    socket.on('join', async (data, ack) => {
         try {
             const infos = manager.join(data.room, data.player);
             io.to(data.room).emit('player', ({player: data.player, isDeleted: false}));
-            socket.join(data.room);
+            await socket.join(data.room);
             ack({infos, isFull: null});
         } catch (e) {
             console.error(e);
@@ -105,7 +99,7 @@ io.on('connection', (socket) => {
     socket.on('ready', async (data) => {
         try {
             const {game_end, players} = manager.ready(data.room, data.player);
-            if (game_end && players) {
+            if (players) {
                 io.to(data.room).emit('ready', (players));
                 console.log(manager._games);
                 console.log('ready!');

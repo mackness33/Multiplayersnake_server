@@ -29,7 +29,7 @@ class SupabaseService {
         }
 
         for (let index = 0; index < players.length; index++) {
-            game[`player${index}`] = players_ids[index].id;
+            game[`player${index}`] = players_ids[index];
             game[`player${index}_points`] = players[index].points;
         }
 
@@ -70,9 +70,33 @@ class SupabaseService {
             throw Error(error);
         };
 
-        return data;
+        return data.map((player) => player.id);
     }
 
+    check_friendship = async (admin, player) => {
+        const players_ids = await this.get_players_id([admin, player]); 
+        if (!players_ids) {
+            throw Error('error on getting the players');
+        }
+
+        // for (let index = 0; index < players.length; index++) {
+        //     game[`player${index}`] = players_ids[index].id;
+        //     game[`player${index}_points`] = players[index].points;
+        // }
+
+        const { data, error } = await supabase
+            .from('friends')
+            .select('*', { count: 'estimated', head: true }).in('requester', players_ids).in('followed', players_ids).eq('is_confirmed', true);
+
+        if (error && error !== null) {
+            console.error(error)
+            throw Error(error);
+        };
+
+        console.log(`Check friendship of ${admin} & ${player}: ${data.count >= 0}`);
+
+        return data.count >= 0;
+    } 
 }
 
 module.exports = SupabaseService;

@@ -21,14 +21,18 @@ class ServerService {
         delete this._games[`${room}`];
     }
 
-    join = (room, player) => {
+    join = async (room, player) => {
         if (!this._games[`${room}`]) {
             const error = new Error('The room doesn\'t exist');
             error.isFull = false;
             throw error;
         }
 
-        return this._games[`${room}`].join(player);
+        if (!this._games[`${room}`].rules.public && !await this._database.check_friendship(this._games[`${room}`].admin, player)) {
+            return;
+        }
+
+        this._games[`${room}`].join(player);
     }
 
     leave = (room, player) => {
@@ -40,20 +44,20 @@ class ServerService {
     }
 
     abort = (room, player) => {
-        this.isAdmin(room, player);
+        this.is_admin(room, player);
         this.remove(room);
     }
 
-    isAdmin = (room, player) => {
+    is_admin = (room, player) => {
         if (!this._games[`${room}`]) {
             throw new Error('The room doesn\'t exist');
-        } else if (!this._games[`${room}`].isAdmin(player)) {
+        } else if (!this._games[`${room}`].is_admin(player)) {
             throw new Error('You don\'t have the permission for this action');
         }
     }
 
     ready = (room, player) => {
-        this.isAdmin(room, player);
+        this.is_admin(room, player);
         return this._games[`${room}`].ready();
     }
 
